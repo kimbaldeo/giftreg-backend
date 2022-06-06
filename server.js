@@ -4,8 +4,8 @@ const methodOverride = require('method-override');
 const PORT = 4000
 
 const AWS = require('aws-sdk');
-AWS.config.update({region:'ADD AWS CRED'});
-const docClient = new AWS.DynamoDB.DocumentClient()
+AWS.config.update({region:'us-east-1'});
+const dynamodb = new AWS.DynamoDB.DocumentClient()
 const bodyParser = require('body-parser');
 
 

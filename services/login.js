@@ -11,12 +11,12 @@ async function login(user) {
     const username = user.username
     const password = user.password
     if (!user || !username || !password) {
-        return util.buildResponse(401,, {
+        return util.buildResponse(401, {
             message: 'Both a username and password are required'
         })
     }
 
-    const dynamoUser = await getUser(username)
+    const dynamoUser = await getUser(username.toLowerCase().trim( ))
     if (!dynamoUser || !dynamoUser.username) {
         return util.buildResponse(403, {
             message: 'User does not exist'

@@ -5,7 +5,6 @@ const AWS = require('aws-sdk');
 AWS.config.update({region:'us-east-1'});
 const dynamodb = new AWS.DynamoDB.DocumentClient()
 const userTable = 'gift.user';
-// const bodyParser = require('body-parser');
 
 async function register(userInfo) {
     const name = userInfo.name
@@ -13,7 +12,7 @@ async function register(userInfo) {
     const username = userInfo.username
     const password = userInfo.password
 
-    if (!username || !namme || !email || !password) {
+    if (!username || !name || !email || !password) {
         return util.buildResponse(401, {
             message: 'All fields are required'
         })
@@ -22,7 +21,7 @@ async function register(userInfo) {
     const dynamoUser = await getUser(username.toLowerCase().trim())
     if (dynamoUser && dynamoUser.username) {
         return util.buildResponse(40, {
-            message: 'This username is already in use. Please choose a differnt username'
+            message: 'This username is already in use. Please choose a different username'
         })
     }
 

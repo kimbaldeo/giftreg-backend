@@ -55,13 +55,13 @@ async function getUser(username) {
     return await dynamodb.get(params).promise().then(response => {
         return response.Item
     }, error => {
-        console.error('There was an error: ', error)
+        console.error('There was an error retrieving user: ', error)
     })
 }
 
 async function saveUser(user) {
     const params = {
-        TableName: userTable;
+        TableName: userTable,
         Item: user
     }
 
@@ -71,3 +71,5 @@ async function saveUser(user) {
         console.error('There is an error saving user: ', error)
     })
 }
+
+module.exports.register = register

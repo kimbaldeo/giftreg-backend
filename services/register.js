@@ -1,12 +1,14 @@
+const uuid = require('uuid')
 const AWS = require('aws-sdk');
-AWS.config.update({
-  region: 'us-east-1'
-})
+AWS.config.update({region: 'us-east-1'})
+
 const util = require('../utilities/util');
 const bcrypt = require('bcryptjs');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'gift.user';
+const wishlistTable = 'gift.wishlist';
+const itemTable = 'gift.item'
 
 async function register(userInfo) {
   const name = userInfo.name;
@@ -26,12 +28,24 @@ async function register(userInfo) {
     })
   }
 
+  // Create Wishlist ID and validate it doesn't already exist
+  let wishlistID;
+  let checkingWishlistID = true
+  while(checkingWishlistID) {
+    wishlistID = uuid.v4();
+    const dynamodbWishlist = await getWishlist(wishlistID);
+    if (!dynamodbWishlist) {
+      checkingWishlistID = false
+    } 
+  }
+
   const encryptedPW = bcrypt.hashSync(password.trim(), 10);
   const user = {
     name: name,
     email: email,
     username: username.toLowerCase().trim(),
-    password: encryptedPW
+    password: encryptedPW,
+    wishlistID: wishlistID
   }
 
   const saveUserResponse = await saveUser(user);
@@ -67,6 +81,21 @@ async function saveUser(user) {
   }, error => {
     console.error('There was an error saving user: ', error)
   });
+}
+
+async function getWishlist(id) {
+  const params = {
+    TableName: wishlistTable,
+    Key: {
+      wishlistID: id
+    }
+  }
+
+  return await dynamodb.get(params).promise().then(response => {
+    return response.Item
+  }, error => {
+    return null
+  })
 }
 
 module.exports.register = register;

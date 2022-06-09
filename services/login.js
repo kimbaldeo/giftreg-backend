@@ -1,7 +1,5 @@
 const AWS = require('aws-sdk');
-AWS.config.update({
-  region: 'us-east-1'
-})
+AWS.config.update({region: 'us-east-1'})
 const util = require('../utilities/util');
 const bcrypt = require('bcryptjs');
 const auth = require('../utilities/auth');
@@ -9,6 +7,7 @@ const auth = require('../utilities/auth');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'gift.user';
 
+// switched user to userInfo - cant remember why it was user - test to see if works
 async function login(user) {
   const username = user.username;
   const password = user.password;

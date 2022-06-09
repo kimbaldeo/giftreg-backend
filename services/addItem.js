@@ -23,6 +23,7 @@ async function addItem(itemInfo) {
   const img = itemInfo.img
   const description = itemInfo.description
   const price = itemInfo.price
+  const contributions = itemInfo.contributions
   if (!amazonURL || !productName || !message) {
     return util.buildResponse(401, {
       message: 'The product URL, product name and a brief message are required'
@@ -30,6 +31,8 @@ async function addItem(itemInfo) {
   }
 
   // Get user's wishlistID
+  userFunctions.getUser
+  userFunctions.getWishlist
 
 
   // Create itemID
@@ -51,6 +54,7 @@ async function addItem(itemInfo) {
     product_description: description,
     message: message,
     price: price,
+    contributions: contributions,
     wishlistID: wishlistID
   }
 

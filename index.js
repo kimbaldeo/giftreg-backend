@@ -1,3 +1,6 @@
+
+
+// user auth
 const registerService = require('./services/register');
 const loginService = require('./services/login');
 const verifyService = require('./services/verify');
@@ -33,5 +36,6 @@ exports.handler = async (event) => {
     return response;
 };
 
+// Connection to seed api data to dynamo
 
 

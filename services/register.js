@@ -8,7 +8,6 @@ const bcrypt = require('bcryptjs');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'gift.user';
 const wishlistTable = 'gift.wishlist';
-const itemTable = 'gift.item'
 
 async function register(userInfo) {
   const name = userInfo.name;

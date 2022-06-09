@@ -1,10 +1,10 @@
-
+const util = require('./utilities/util');
 
 // user auth
 const registerService = require('./services/register');
 const loginService = require('./services/login');
 const verifyService = require('./services/verify');
-const util = require('./utilities/util');
+
 
 const healthPath = '/health';
 const registerPath = '/register';
@@ -38,4 +38,5 @@ exports.handler = async (event) => {
 
 // Connection to seed api data to dynamo
 
-
+const addItemService = require('./services/addItem')
+const removeItemService = require('./services/removeItem')

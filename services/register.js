@@ -1,11 +1,12 @@
-const uuid = require('uuid')
-const AWS = require('aws-sdk');
-AWS.config.update({region: 'us-east-1'})
-
 const util = require('../utilities/util');
-const bcrypt = require('bcryptjs');
+const userFunctions = require('../utilities/user')
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const uuid = require('uuid')
+const bcrypt = require('bcryptjs');
+const AWS = require('aws-sdk');
+
+
+AWS.config.update({region: 'us-east-1'})
 const userTable = 'gift.user';
 const wishlistTable = 'gift.wishlist';
 
@@ -20,7 +21,7 @@ async function register(userInfo) {
     })
   }
 
-  const dynamoUser = await getUser(username.toLowerCase().trim());
+  const dynamoUser = await userFunctions.getUser(username.toLowerCase().trim());
   if (dynamoUser && dynamoUser.username) {
     return util.buildResponse(401, {
       message: 'This user already exists. Please choose a different username'
@@ -32,7 +33,7 @@ async function register(userInfo) {
   let checkingWishlistID = true
   while(checkingWishlistID) {
     wishlistID = uuid.v4();
-    const dynamodbWishlist = await getWishlist(wishlistID);
+    const dynamodbWishlist = await userFunctions.getWishlist(wishlistID);
     if (!dynamodbWishlist) {
       checkingWishlistID = false
     } 
@@ -47,54 +48,12 @@ async function register(userInfo) {
     wishlistID: wishlistID
   }
 
-  const saveUserResponse = await saveUser(user);
+  const saveUserResponse = await userFunctions.saveUser(user);
   if (!saveUserResponse) {
     return util.buildResponse(503, { message: 'Server Error. Please try again later.'});
   }
 
   return util.buildResponse(200, { username: username });
-}
-
-async function getUser(username) {
-  const params = {
-    TableName: userTable,
-    Key: {
-      username: username
-    }
-  }
-
-  return await dynamodb.get(params).promise().then(response => {
-    return response.Item;
-  }, error => {
-    console.error('There was an error getting user: ', error);
-  })
-}
-
-async function saveUser(user) {
-  const params = {
-    TableName: userTable,
-    Item: user
-  }
-  return await dynamodb.put(params).promise().then(() => {
-    return true;
-  }, error => {
-    console.error('There was an error saving user: ', error)
-  });
-}
-
-async function getWishlist(id) {
-  const params = {
-    TableName: wishlistTable,
-    Key: {
-      wishlistID: id
-    }
-  }
-
-  return await dynamodb.get(params).promise().then(response => {
-    return response.Item
-  }, error => {
-    return null
-  })
 }
 
 module.exports.register = register;

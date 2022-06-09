@@ -1,6 +1,7 @@
 const util = require('../utilities/util');
 const auth = require('../utilities/auth');
 
+
 function verify(requestBody) {
   if (!requestBody.user || !requestBody.user.username || !requestBody.token) {
     return util.buildResponse(401, { 

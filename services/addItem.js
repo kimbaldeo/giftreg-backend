@@ -1,6 +1,10 @@
-const uuid = require('uuid')
-const AWS = require('aws-sdk')
-require('dotenv').config()
+const util = require('../utilities/util');
+const userFunctions = require('../utilities/user');
+require('dotenv').config();
+
+const uuid = require('uuid');
+const AWS = require('aws-sdk');
+
 
 AWS.config.update({
     region: 'us-east-1',
@@ -27,6 +31,7 @@ async function addItem(itemInfo) {
 
   // Get user's wishlistID
 
+
   // Create itemID
   let itemID;
   let checkingItemID = true
@@ -49,11 +54,11 @@ async function addItem(itemInfo) {
     wishlistID: wishlistID
   }
 
-  const saveUserResponse = await saveUser(user);
-  if (!saveUserResponse) {
+  const saveItemResponse = await saveItem(item);
+  if (!saveItemResponse) {
     return util.buildResponse(503, { message: 'Server Error. Please try again later.'});
   }
-
+// Fix in index file 
   return util.buildResponse(200, { username: username });
 }
 
@@ -83,3 +88,5 @@ async function getItemID(id) {
     return null
   })
 }
+
+module.exports.addItem = addItem

@@ -5,7 +5,6 @@ const util = require('../utilities/util');
 const bcrypt = require('bcryptjs');
 const AWS = require('aws-sdk');
 
-
 AWS.config.update({region: 'us-east-1'})
 const userTable = 'gift.user';
 
@@ -19,18 +18,18 @@ async function login(user) {
     })
   }
 
-  const dynamoUser = await userFunctions.getUser(username.toLowerCase().trim());
-  if (!dynamoUser || !dynamoUser.username) {
+  userFunctions.currentUser = await userFunctions.getUser(username.toLowerCase().trim());
+  if (!userFunctions.currentUser || !userFunctions.currentUser.username) {
     return util.buildResponse(403, { message: 'This user does not exist'});
   }
 
-  if (!bcrypt.compareSync(password, dynamoUser.password)) {
+  if (!bcrypt.compareSync(password, userFunctions.currentUser.password)) {
     return util.buildResponse(403, { message: 'Password is incorrect'});
   }
 
   const userInfo = {
-    username: dynamoUser.username,
-    name: dynamoUser.name
+    username: userFunctions.currentUser.username,
+    name: userFunctions.currentUser.name
   }
   const token = auth.generateToken(userInfo)
   const response = {

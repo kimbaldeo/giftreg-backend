@@ -6,6 +6,7 @@ const userTable = 'gift.user';
 const wishlistTable = 'gift.wishlist';
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
+let currentUser;
 
 async function getUser(username) {
     const params = {

@@ -1,15 +1,17 @@
 const util = require('./utilities/util');
 
-// user auth
+
 const registerService = require('./services/register');
 const loginService = require('./services/login');
 const verifyService = require('./services/verify');
-
+const addItemService = require('./services/addItem')
+const removeItemService = require('./services/removeItem')
 
 const healthPath = '/health';
 const registerPath = '/register';
 const loginPath = '/login';
 const verifyPath = '/verify';
+const itemPath = '/additem'
 
 exports.handler = async (event) => {
     console.log('Request Event: ', event);
@@ -30,13 +32,12 @@ exports.handler = async (event) => {
             const verifyBody = JSON.parse(event.body);
             response = verifyService.verify(verifyBody);
             break;
+        case event.httpMethod === 'POST' && event.path === itemPath:
+            const itemBody = JSON.parse(event.body);
+            response = addItemService.addItem(itemBody);
+                break;
         default:
             response = util.buildResponse(404, '404 Not Found');
     }
     return response;
 };
-
-// Connection to seed api data to dynamo
-
-const addItemService = require('./services/addItem')
-const removeItemService = require('./services/removeItem')

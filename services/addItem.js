@@ -14,6 +14,7 @@ AWS.config.update({
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const itemTable = 'gift.item' 
+const wishlistTable = 'gift.wishlist'
 
 
 async function addItem(itemInfo) {
@@ -31,8 +32,12 @@ async function addItem(itemInfo) {
   }
 
   // Get user's wishlistID
-  userFunctions.getUser
-  userFunctions.getWishlist
+  const wishlist = userFunctions.getWishlist(userFunctions.currentUser.wishlistID)
+  if (!wishlist) {
+    return util.buildResponse(503, {
+      message: 'Cannot access your wishlist, please sign in or login'
+    })
+  }
 
 
   // Create itemID
@@ -55,13 +60,17 @@ async function addItem(itemInfo) {
     message: message,
     price: price,
     contributions: contributions,
-    wishlistID: wishlistID
   }
+
 
   const saveItemResponse = await saveItem(item);
   if (!saveItemResponse) {
     return util.buildResponse(503, { message: 'Server Error. Please try again later.'});
   }
+
+  wishlist.items.append(itemID);
+  saveWishlist(wishlist);
+
 // Fix in index file 
   return util.buildResponse(200, { username: username });
 }
@@ -91,6 +100,18 @@ async function getItemID(id) {
   }, error => {
     return null
   })
+}
+
+async function saveWishlist(wishlist) {
+  const params = {
+    TableName: wishlistTable,
+    Item: wishlist
+  }
+  return await dynamodb.put(params).promise().then(() => {
+    return true;
+  }, error => {
+    console.error('There was an error saving item ', error)
+  });
 }
 
 module.exports.addItem = addItem

@@ -1,21 +1,13 @@
 const util = require('../utilities/util');
-const userFunctions = require('../utilities/user');
+const databaseUtil = require('../utilities/databaseUtil');
 require('dotenv').config();
 
 const uuid = require('uuid');
 const AWS = require('aws-sdk');
 
-
 AWS.config.update({
-    region: 'us-east-1',
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_K
+    region: 'us-east-1'
 })
-
-const dynamodb = new AWS.DynamoDB.DocumentClient();
-const itemTable = 'gift.item' 
-const wishlistTable = 'gift.wishlist'
-
 
 async function addItem(itemInfo) {
   const amazonURL = itemInfo.amazonURL
@@ -32,7 +24,7 @@ async function addItem(itemInfo) {
   }
 
   // Get user's wishlistID
-  const wishlist = userFunctions.getWishlist(userFunctions.currentUser.wishlistID)
+  const wishlist = databaseUtil.getWishlist(databaseUtil.currentUser.wishlistID)
   if (!wishlist) {
     return util.buildResponse(503, {
       message: 'Cannot access your wishlist, please sign in or login'
@@ -45,7 +37,7 @@ async function addItem(itemInfo) {
   let checkingItemID = true
   while(checkingItemID) {
     itemID = uuid.v4();
-    const dynamodbItem = await getItemID(itemID);
+    const dynamodbItem = await databaseUtil.getItem(itemID);
     if (!dynamodbItem) {
       checkingItemID = false
     } 
@@ -63,55 +55,18 @@ async function addItem(itemInfo) {
   }
 
 
-  const saveItemResponse = await saveItem(item);
+  const saveItemResponse = await databaseUtil.saveItem(item);
   if (!saveItemResponse) {
-    return util.buildResponse(503, { message: 'Server Error. Please try again later.'});
+    return util.buildResponse(503, { message: 'Server Error. Please try again later. !Saveitem response'});
   }
 
   wishlist.items.append(itemID);
-  saveWishlist(wishlist);
+  const saveWishlistResponse = await databaseUtil.saveWishlist(wishlist);
+  if (!saveWishlistResponse) {
+    return util.buildResponse(503, { message: 'Server Error, could not store item to wishlist. Please try again later.'});
+  }
 
-// Fix in index file 
   return util.buildResponse(200, { username: username });
-}
-
-async function saveItem(item) {
-  const params = {
-    TableName: itemTable,
-    Item: item
-  }
-  return await dynamodb.put(params).promise().then(() => {
-    return true;
-  }, error => {
-    console.error('There was an error saving item ', error)
-  });
-}
-
-async function getItemID(id) {
-  const params = {
-    TableName: itemTable,
-    Key: {
-      itemID: id
-    }
-  }
-
-  return await dynamodb.get(params).promise().then(response => {
-    return response.Item
-  }, error => {
-    return null
-  })
-}
-
-async function saveWishlist(wishlist) {
-  const params = {
-    TableName: wishlistTable,
-    Item: wishlist
-  }
-  return await dynamodb.put(params).promise().then(() => {
-    return true;
-  }, error => {
-    console.error('There was an error saving item ', error)
-  });
 }
 
 module.exports.addItem = addItem

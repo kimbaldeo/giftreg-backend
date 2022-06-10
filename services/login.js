@@ -1,12 +1,10 @@
 const auth = require('../utilities/auth');
-const userFunctions = require('../utilities/user')
+const databaseUtil = require('../utilities/databaseUtil')
 const util = require('../utilities/util');
-
 const bcrypt = require('bcryptjs');
 const AWS = require('aws-sdk');
 
-AWS.config.update({region: 'us-east-1'})
-const userTable = 'gift.user';
+AWS.config.update({region: 'us-east-1'});
 
 // switched user to userInfo - cant remember why it was user - test to see if works
 async function login(user) {
@@ -18,10 +16,11 @@ async function login(user) {
     })
   }
 
-  userFunctions.currentUser = await userFunctions.getUser(username.toLowerCase().trim());
-  if (!userFunctions.currentUser || !userFunctions.currentUser.username) {
+  const userResponse = await databaseUtil.getUser(username.toLowerCase().trim());
+  if (!userResponse) {
     return util.buildResponse(403, { message: 'This user does not exist'});
   }
+  databaseUtil.currentUser = userResponse;
 
   if (!bcrypt.compareSync(password, userFunctions.currentUser.password)) {
     return util.buildResponse(403, { message: 'Password is incorrect'});

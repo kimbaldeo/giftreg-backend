@@ -1,6 +1,5 @@
 const util = require('./utilities/util');
 
-
 const registerService = require('./services/register');
 const loginService = require('./services/login');
 const verifyService = require('./services/verify');
@@ -11,7 +10,7 @@ const healthPath = '/health';
 const registerPath = '/register';
 const loginPath = '/login';
 const verifyPath = '/verify';
-const itemPath = '/additem'
+const itemPath = '/additem';
 
 exports.handler = async (event) => {
     console.log('Request Event: ', event);
@@ -35,7 +34,7 @@ exports.handler = async (event) => {
         case event.httpMethod === 'POST' && event.path === itemPath:
             const itemBody = JSON.parse(event.body);
             response = addItemService.addItem(itemBody);
-                break;
+            break;
         default:
             response = util.buildResponse(404, '404 Not Found');
     }

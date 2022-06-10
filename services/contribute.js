@@ -1,5 +1,5 @@
 const util = require('../utilities/util');
-const userFunctions = require('../utilities/user');
+const userFunctions = require('../utilities/databaseUtil');
 require('dotenv').config();
 
 const uuid = require('uuid');
@@ -23,6 +23,4 @@ async function giftContribute() {
     const description = itemInfo.description
     const price = itemInfo.price
     const contributions = itemInfo.contributions
-
-    const checkPrice(price) 
 }

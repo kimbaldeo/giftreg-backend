@@ -23,7 +23,7 @@ async function addItem(itemInfo) {
   }
 
   // Get user's wishlistID
-  const wishlist = databaseUtil.getWishlist(databaseUtil.currentUser.wishlistID)
+  const wishlist = await databaseUtil.getWishlist(databaseUtil.currentUser.wishlistID)
   if (!wishlist) {
     return util.buildResponse(503, {
       message: 'Cannot access your wishlist, please sign in or login'
@@ -36,6 +36,9 @@ async function addItem(itemInfo) {
   let checkingItemID = true
   while(checkingItemID) {
     itemID = uuid.v4();
+    if (databaseUtil.isLocalhost()) {
+      break;
+    }
     const dynamodbItem = await databaseUtil.getItem(itemID);
     if (!dynamodbItem) {
       checkingItemID = false
@@ -58,13 +61,13 @@ async function addItem(itemInfo) {
     return util.buildResponse(503, { message: 'Server Error. Please try again later. !Saveitem response'});
   }
 
-  wishlist.items.append(itemID);
+  wishlist.items.push(itemID);
   const saveWishlistResponse = await databaseUtil.saveWishlist(wishlist);
   if (!saveWishlistResponse) {
     return util.buildResponse(503, { message: 'Server Error, could not store item to wishlist. Please try again later.'});
   }
 
-  return util.buildResponse(200, { username: username });
+  return util.buildResponse(200, { user: databaseUtil.currentUser });
 }
 
 module.exports.addItem = addItem

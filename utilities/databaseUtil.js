@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 AWS.config.update({region: 'us-east-1'})
-
+require('dotenv').config();
 
 const userTable = 'gift.user';
 const wishlistTable = 'gift.wishlist';
@@ -8,19 +8,38 @@ const itemTable = 'gift.item';
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
+function isLocalhost() {
+  return process.env.NODE_ENV === 'development';
+}
+
 class DatabaseUtil {
   // Current User for the App Session
-  currentUser = null;
+  currentUser = {
+    name: 'Kimberly',
+    email: 'kbaldeotest@gmail.com',
+    username: 'foobar',
+    password: 'password1!',
+    wishlistID: '12345'
+  };
 
   // User Database Functions
   async getUser(username) {
+    if (isLocalhost()) {
+      return {
+        name: 'Kimberly',
+        email: 'kbaldeotest@gmail.com',
+        username: username,
+        password: 'password1!',
+        wishlistID: '12345'
+      }
+    }
       const params = {
         TableName: userTable,
         Key: {
           username: username
         }
       }
-    
+      
       return await dynamodb.get(params).promise().then(response => {
         return response.Item;
       }, error => {
@@ -30,6 +49,9 @@ class DatabaseUtil {
 
 
   async saveUser(user) {
+    if (isLocalhost()) {
+      return user;
+    }
       const params = {
         TableName: userTable,
         Item: user
@@ -44,6 +66,12 @@ class DatabaseUtil {
 
   // Wishlist Database Functions
   async getWishlist(id) {
+    if (isLocalhost()) {
+      return {
+        id: '12345',
+        items: ['sample']
+      }
+    }
     const params = {
         TableName: wishlistTable,
         Key: {
@@ -60,6 +88,9 @@ class DatabaseUtil {
   }
 
   async saveWishlist(wishlist) {
+    if (isLocalhost()) {
+      return wishlist
+    }
     const params = {
       TableName: wishlistTable,
       Item: wishlist
@@ -74,6 +105,17 @@ class DatabaseUtil {
 
   // Item Database Functions
   async getItem(id) {
+    if (isLocalhost()) {
+      return {
+        itemID: "qwerty123",
+        amazonURL: "www.amazon.url",
+        productName: "soap",
+        productImg: "img.url",
+        message: "a simple message",
+        price: 12,
+        contributions: 7
+      }
+    }
     const params = {
       TableName: itemTable,
       Key: {
@@ -90,6 +132,9 @@ class DatabaseUtil {
   }
 
   async saveItem(item) {
+    if (isLocalhost()) {
+      return item;
+    }
     const params = {
       TableName: itemTable,
       Item: item
@@ -99,6 +144,10 @@ class DatabaseUtil {
     }, error => {
       console.error('There was an error saving item saveItem response', error)
     });
+  }
+
+  isLocalhost() {
+    return process.env.NODE_ENV === 'development';
   }
 }
 

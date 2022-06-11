@@ -10,12 +10,11 @@ AWS.config.update({
 })
 
 async function addItem(itemInfo) {
-  const amazonURL = itemInfo.amazonURL
-  const productName = itemInfo.name;
+  const amazonURL = itemInfo.amazon_url;
+  const productName = itemInfo.product_name;
   const message = itemInfo.message;
-  const img = itemInfo.img
-  const description = itemInfo.description
-  const price = itemInfo.price
+  const img = itemInfo.product_img;
+  const price = itemInfo.price;
   const contributions = itemInfo.contributions
   if (!amazonURL || !productName || !message) {
     return util.buildResponse(401, {
@@ -45,10 +44,9 @@ async function addItem(itemInfo) {
 
   const item = {
     itemID: itemID,
-    amazon_url: amazonURL,
-    product_name: productName.trim(),
+    amazonURL: amazonURL,
+    productName: productName.trim(),
     productImg: img,
-    product_description: description,
     message: message,
     price: price,
     contributions: contributions,

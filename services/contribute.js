@@ -1,5 +1,5 @@
 const util = require('../utilities/util');
-const userFunctions = require('../utilities/databaseUtil');
+const databaseUtil = require('../utilities/databaseUtil');
 require('dotenv').config();
 
 const uuid = require('uuid');

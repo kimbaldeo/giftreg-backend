@@ -22,13 +22,13 @@ async function login(user) {
   }
   databaseUtil.currentUser = userResponse;
 
-  if (!bcrypt.compareSync(password, userFunctions.currentUser.password)) {
+  if (!bcrypt.compareSync(password, databaseUtil.currentUser.password)) {
     return util.buildResponse(403, { message: 'Password is incorrect'});
   }
 
   const userInfo = {
-    username: userFunctions.currentUser.username,
-    name: userFunctions.currentUser.name
+    username: databaseUtil.currentUser.username,
+    name: databaseUtil.currentUser.name
   }
   const token = auth.generateToken(userInfo)
   const response = {

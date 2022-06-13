@@ -14,13 +14,7 @@ function isLocalhost() {
 
 class DatabaseUtil {
   // Current User for the App Session
-  currentUser = {
-    name: 'Kimberly',
-    email: 'kbaldeotest@gmail.com',
-    username: 'foobar',
-    password: 'password1!',
-    wishlistID: '12345'
-  };
+  currentUser = null
 
   // User Database Functions
   async getUser(username) {

@@ -37,6 +37,7 @@ async function displayWishlist() {
         }
         items.push(itemResponse);
     }
+    return util.buildResponse(200, {wishlistItems: items})
 }
 
-module.exports.displayWishlist = aWishlist
+module.exports.displayWishlist = displayWishlist

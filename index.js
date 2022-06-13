@@ -39,7 +39,7 @@ exports.handler = async (event) => {
             break;
         case event.httpMethod === 'GET' && event.path === wishlistPath:
             const wishlistBody = JSON.parse(event.body);
-            response = wishlistService.addItem(wishlistBody);
+            response = wishlistService.displayWishlist();
                 break;
         default:
             response = util.buildResponse(404, '404 Not Found');

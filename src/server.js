@@ -1,60 +1,63 @@
 const express = require('express');
 const app = express();
-const PORT = 3000
-const addItemService = require('./services/addItem')
+const PORT = 3000;
+const addItemService = require('./services/addItem');
+const contributeGiftService = require('./services/contributeGift');
+const loginUserService = require('./services/loginUser');
+const registerUserService = require('./services/registerUser');
+const removeItemService = require('./services/removeItem');
+const verifyTokenService = require('./services/verifyToken');
+const fetchWishlistService = require('./services/fetchWishlist');
 require('dotenv').config();
 
 app.use(express.json());
 
 app.listen(PORT, () => {
-    console.log(`listening to port: ${PORT}`)
+    console.log(`Server connected and listening to port: ${PORT}`);
 });
 
+// Health Check
 app.get("/health", async (req, res) => {
-    res.status(200)
+    res.sendStatus(200);
 });
 
+// Register New User
+app.post('/register', async (req, res) => {
+    const response = await registerUserService.register(req.body);
+    res.send(response);
+});
+
+// User Login
+app.post('/login', async (req, res) => {
+    const response = await loginUserService.login(req.body);
+    res.send(response);
+});
+
+app.post('/verify', async (req, res) => {
+    const response = await verifyTokenService.verify(req.body);
+    res.send(response);
+});
+
+// Add Item To Wishlist
 app.post('/additem', async (req, res) => {
-    if (req.headers.host.includes("localhost")) {
-        process.env.NODE_ENV = 'development'
-    }
     const response = await addItemService.addItem(req.body);
     res.send(response);
 });
 
-const healthPath = '/health';
-const registerPath = '/register';
-const loginPath = '/login';
-const verifyPath = '/verify';
-const itemPath = '/additem';
-const wishlistPath = '/wishlist'
+// Delete Item From Wishlist
+app.delete('/removeitem', async (req, res) => {
+    const response = await removeItemService.removeItem(req.body);
+    res.send(response);
+});
 
+// Retrieve Wishlist
+app.get('/wishlist', async (req, res) => {
+    const response = await fetchWishlistService.fetchWishlist(req.params);
+    res.send(response);
+});
 
-let response;
-switch(true) {
-    case event.httpMethod === 'GET' && event.path === healthPath:
-        response = util.buildResponse(200);
-        break;
-    case event.httpMethod === 'POST' && event.path === registerPath:
-        const registerBody = JSON.parse(event.body);
-        response = await registerService.register(registerBody);
-        break;
-    case event.httpMethod === 'POST' && event.path === loginPath:
-        const loginBody = JSON.parse(event.body);
-        response = await loginService.login(loginBody);
-        break;
-    case event.httpMethod === 'POST' && event.path === verifyPath:
-        const verifyBody = JSON.parse(event.body);
-        response = verifyService.verify(verifyBody);
-        break;
-    case event.httpMethod === 'POST' && event.path === itemPath:
-        const itemBody = JSON.parse(event.body);
-        response = addItemService.addItem(itemBody);
-        break;
-    case event.httpMethod === 'GET' && event.path === wishlistPath:
-        const wishlistBody = JSON.parse(event.body);
-        response = wishlistService.displayWishlist();
-            break;
-    default:
-        response = util.buildResponse(404, '404 Not Found');
-}
+// Contribute To Item
+app.post('/contribute', async (req, res) => {
+    const response = await contributeGiftService.contribute(req.body);
+    res.send(response);
+});

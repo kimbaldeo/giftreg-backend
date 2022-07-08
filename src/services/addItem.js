@@ -1,24 +1,24 @@
-const util = require('../utilities/util');
-const databaseUtil = require('../utilities/databaseUtil');
-require('dotenv').config();
-
+const util = require('../utilities/responseBuilder');
+const databaseUtil = require('../utilities/database');
 const uuid = require('uuid');
-const AWS = require('aws-sdk');
+const { Item } = require('../models/item');
 
-AWS.config.update({
-    region: 'us-east-1'
-})
-
+/**
+ * Add Item To Wishlist Service
+ * @param {JSON} itemInfo 
+ * @returns {Response}
+ */
 async function addItem(itemInfo) {
   const amazonURL = itemInfo.amazon_url;
   const productName = itemInfo.product_name;
   const message = itemInfo.message;
   const img = itemInfo.product_img;
   const price = itemInfo.price;
-  const contributions = itemInfo.contributions
+  const contributions = itemInfo.contributions;
+
   if (!amazonURL || !productName || !message) {
     return util.buildResponse(401, {
-      message: 'The product URL, product name and a brief message are required'
+      message: 'The product URL, product name, and a brief message are required'
     })
   }
 
@@ -30,7 +30,6 @@ async function addItem(itemInfo) {
     })
   }
 
-
   // Create itemID
   let itemID;
   let checkingItemID = true
@@ -41,33 +40,26 @@ async function addItem(itemInfo) {
     }
     const dynamodbItem = await databaseUtil.getItem(itemID);
     if (!dynamodbItem) {
-      checkingItemID = false
+      checkingItemID = false;
     } 
   }
 
-  const item = {
-    itemID: itemID,
-    amazonURL: amazonURL,
-    productName: productName.trim(),
-    productImg: img,
-    message: message,
-    price: price,
-    contributions: contributions,
-  }
+  const item = new Item(itemID, amazonURL, productName.trim(), img, message, price, contributions);
 
-
+  // Save item to DB 
   const saveItemResponse = await databaseUtil.saveItem(item);
   if (!saveItemResponse) {
     return util.buildResponse(503, { message: 'Server Error. Please try again later. !Saveitem response'});
   }
 
+  // Save item to wishlist
   wishlist.items.push(itemID);
   const saveWishlistResponse = await databaseUtil.saveWishlist(wishlist);
   if (!saveWishlistResponse) {
     return util.buildResponse(503, { message: 'Server Error, could not store item to wishlist. Please try again later.'});
   }
 
-  return util.buildResponse(200, { user: databaseUtil.currentUser });
+  return util.buildResponse(200, { wishlist: wishlist });
 }
 
-module.exports.addItem = addItem
+module.exports.addItem = addItem;

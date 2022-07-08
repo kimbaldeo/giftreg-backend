@@ -1,3 +1,9 @@
+/**
+ * Response Builder Helper Function
+ * @param {number} statusCode 
+ * @param {JSON} body 
+ * @returns {Response}
+ */
 function buildResponse(statusCode, body) {
     return {
       statusCode: statusCode,

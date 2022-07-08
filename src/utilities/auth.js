@@ -1,13 +1,13 @@
 const jsonWebToken = require('jsonwebtoken');
+require('dotenv').config();
 
 function generateToken(userInfo) {
   if (!userInfo) {
     return null;
   }
-
   return jsonWebToken.sign(userInfo, process.env.JWT_SECRET, {
     expiresIn: '1h'
-  })
+  });
 }
 
 function verifyToken(username, token) {
@@ -18,14 +18,12 @@ function verifyToken(username, token) {
         message: 'invalid token'
       }
     }
-
     if (response.username !== username) {
       return {
         verified: false,
         message: 'invalid user'
       }
     }
-
     return {
       verified: true,
       message: 'verified'
@@ -33,5 +31,5 @@ function verifyToken(username, token) {
   })
 }
 
-module.exports.generateToken = generateToken;
-module.exports.verifyToken = verifyToken;
+exports.generateToken = generateToken;
+exports.verifyToken = verifyToken;

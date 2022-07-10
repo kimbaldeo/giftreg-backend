@@ -9,12 +9,19 @@ const { Item } = require('../models/item');
  * @returns {Response}
  */
 async function addItem(itemInfo) {
+  const username = itemInfo.username;
   const amazonURL = itemInfo.amazon_url;
   const productName = itemInfo.product_name;
   const message = itemInfo.message;
   const img = itemInfo.product_img;
   const price = itemInfo.price;
   const contributions = itemInfo.contributions;
+
+  if (!username) {
+    return util.buildResponse(401, {
+      message: 'Username is missing; The username is needed to retrieve the wishlist'
+    })
+  }
 
   if (!amazonURL || !productName || !message) {
     return util.buildResponse(401, {
@@ -23,7 +30,14 @@ async function addItem(itemInfo) {
   }
 
   // Get user's wishlistID
-  const wishlist = await databaseUtil.getWishlist(databaseUtil.currentUser.wishlistID)
+  const user = await databaseUtil.getUser(username);
+  if (!user) {
+    return util.buildResponse(503, {
+      message: 'Cannot access the user, please sign in or login'
+    })
+  }
+
+  const wishlist = await databaseUtil.getWishlist(user.wishlistID)
   if (!wishlist) {
     return util.buildResponse(503, {
       message: 'Cannot access your wishlist, please sign in or login'

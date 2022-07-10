@@ -9,12 +9,18 @@ const util = require('../utilities/responseBuilder');
 async function fetchWishlist(wishlistInfo) {
     // get user to get wishlist id
     // use wishlist id from user to access wishlist
-    const wishlistID = wishlistInfo.wishlist_id;
-    const wishlist = await databaseUtil.getWishlist(wishlistID);
+    const username = wishlistInfo.username;
+    const user = await databaseUtil.getUser(username);
+    if (!user) {
+        return util.buildResponse(503, { message: 'Cannot access user; please try again later' });
+    }
+
+    const wishlist = await databaseUtil.getWishlist(user.wishlistID);
     if (!wishlist) {
         return util.buildResponse(503, { message: 'Cannot access wishlist' });
     }
-    const items = fetchItems(wishlist);
+
+    const items = await fetchItems(wishlist);
     return util.buildResponse(200, {wishlistItems: items})
 }
 
@@ -23,7 +29,7 @@ async function fetchWishlist(wishlistInfo) {
  * @param {Wishlist} wishlist 
  * @returns {Item[]}
  */
-function fetchItems(wishlist) {
+async function fetchItems(wishlist) {
     let items = [];
     for(let i = 0; i < wishlist.items.length; i++) {
         itemID = wishlist.items[i];

@@ -1,148 +1,170 @@
 const AWS = require('aws-sdk');
-AWS.config.update({region: 'us-east-1'})
+const { Item } = require('../models/item');
+const { User } = require('../models/user');
+const { Wishlist } = require('../models/wishlist');
 require('dotenv').config();
 
 const userTable = 'gift.user';
 const wishlistTable = 'gift.wishlist';
 const itemTable = 'gift.item';
 
+AWS.config.update({region: 'us-east-1'})
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-function isLocalhost() {
-  return process.env.NODE_ENV === 'development';
+const isLocalhost = () => {
+  return process.env.SERVER_LOCATION == 'development';
+};
+
+/**
+ * fetch user from database
+ * @param {string} username 
+ * @returns {User?}
+ */
+async function getUser(username) {
+  if (isLocalhost) {
+    return new User('Kimberly', username, 'kbaldeotest@gmail.com', 'password1!', '12345');  
+  }
+
+  const params = {
+    TableName: userTable,
+    Key: {
+      username: username
+    }
+  };
+
+  return await dynamodb.get(params).promise().then(response => {
+    return response.Item;
+    }, 
+    error => {
+      console.error(`There was an error retrieving the user: ${error}`);
+      return null;
+    });
 }
 
-class DatabaseUtil {
-  // Current User for the App Session
-  currentUser = null
-
-  // User Database Functions
-  async getUser(username) {
-    if (isLocalhost()) {
-      return {
-        name: 'Kimberly',
-        email: 'kbaldeotest@gmail.com',
-        username: username,
-        password: 'password1!',
-        wishlistID: '12345'
-      }
-    }
-      const params = {
-        TableName: userTable,
-        Key: {
-          username: username
-        }
-      }
-      
-      return await dynamodb.get(params).promise().then(response => {
-        return response.Item;
-      }, error => {
-        console.error('There was an error getting user: ', error);
-      })
+/**
+ * store user in database
+ * @param {User} user 
+ * @returns {boolean}
+ */
+async function saveUser(user) {
+  if (isLocalhost) {
+    return true;
   }
 
+  const params = {
+    TableName: userTable,
+    Item: user
+  };
 
-  async saveUser(user) {
-    if (isLocalhost()) {
-      return user;
-    }
-      const params = {
-        TableName: userTable,
-        Item: user
-      }
-
-      return await dynamodb.put(params).promise().then(() => {
-        return true;
-      }, error => {
-      console.error('There was an error saving user: user could not save', error)
-      });
-  }
-
-  // Wishlist Database Functions
-  async getWishlist(id) {
-    if (isLocalhost()) {
-      return {
-        id: '12345',
-        items: ['sample']
-      }
-    }
-    const params = {
-        TableName: wishlistTable,
-        Key: {
-          wishlistID: id
-        }
-    }
-
-    return await dynamodb.get(params).promise().then(response => {
-        return response.Item
-    }, error => {
-      // Returning null because we want to keep polling DB to store wishlist with unique ID
-        return null
-    })
-  }
-
-  async saveWishlist(wishlist) {
-    if (isLocalhost()) {
-      return wishlist
-    }
-    const params = {
-      TableName: wishlistTable,
-      Item: wishlist
-    }
-
-    return await dynamodb.put(params).promise().then(() => {
-      return true;
-    }, error => {
-    console.error('There was an error saving user: we could not create a wishlist ', error)
-    });
-  }
-
-  // Item Database Functions
-  async getItem(id) {
-    if (isLocalhost()) {
-      return {
-        itemID: "qwerty123",
-        amazonURL: "www.amazon.url",
-        productName: "soap",
-        productImg: "img.url",
-        message: "a simple message",
-        price: 12,
-        contributions: 7
-      }
-    }
-    const params = {
-      TableName: itemTable,
-      Key: {
-        itemID: id
-      }
-    }
-
-    return await dynamodb.get(params).promise().then(response => {
-      return response.Item
-    }, error => {
-      // Returning null because we want to keep polling DB to store item with unique ID
-      return null
-    })
-  }
-
-  async saveItem(item) {
-    if (isLocalhost()) {
-      return item;
-    }
-    const params = {
-      TableName: itemTable,
-      Item: item
-    }
-    return await dynamodb.put(params).promise().then(() => {
-      return true;
-    }, error => {
-      console.error('There was an error saving item saveItem response', error)
-    });
-  }
-
-  isLocalhost() {
-    return process.env.NODE_ENV === 'development';
-  }
+  return await dynamodb.put(params).promise().then(response => {
+    return true;
+  },
+  error => {
+    console.error(`There was an error saving the user: ${error}`);
+    return false;
+  });
 }
 
-module.exports = new DatabaseUtil();
+/**
+ * fetch wishlist from database
+ * @param {string} id 
+ * @returns {Wishlist?}
+ */
+async function getWishlist(id) {
+  if (isLocalhost) {
+    return new Wishlist('12345', ['12345', '54321', '11111']);
+  }
+
+  const params = {
+    TableName: wishlistTable,
+    Key: {
+      wishlistID: id
+    }
+  };
+
+  return await dynamodb.get(params).promise().then(response => {
+    return response.Item;
+  }, error => {
+    console.error(`There was an error retrieving the wishlist: ${error}`);
+    return null;
+  });
+}
+
+/**
+ * store wishlist in database
+ * @param {Wishlist} wishlist 
+ * @returns {boolean}
+ */
+async function saveWishlist(wishlist) {
+  if (isLocalhost) {
+    return true;
+  }
+
+  const params = {
+    TableName: wishlistTable,
+    Item: wishlist
+  };
+
+  return await dynamodb.put(wishlist).promise().then(response => {
+    return true;
+  }, error => {
+    console.error(`There was an error storing the wishlist: ${error}`);
+    return false;
+  });
+}
+
+/**
+ * fetch item from database
+ * @param {string} id 
+ * @returns {Item?}
+ */
+async function getItem(id) {
+  if (isLocalhost) {
+    return new Item('qwerty123', 'www.amazon.url', 'soap', 'img.url', 'a simple message', 12, 7);
+  }
+
+  const params = {
+    TableName: itemTable,
+    Key: {
+      itemID: id
+    }
+  };
+
+  return await dynamodb.get(params).promise().then(response => {
+    return response.Item;
+  }, error => {
+    console.error(`There was an error retrieving the item: ${error}`);
+    return null;
+  });
+}
+
+/**
+ * store item in database
+ * @param {Item} item 
+ * @returns {boolean}
+ */
+async function saveItem(item) {
+  if (isLocalhost) {
+    return true;
+  }
+
+  const params = {
+    TableName: itemTable,
+    Item: item
+  };
+
+  return await dynamodb.put(params).promise().then(response => {
+    return true;
+  }, error => {
+    console.error(`There was an error saving the item: ${error}`);
+    return false;
+  });
+}
+
+exports.isLocalhost = isLocalhost;
+exports.getUser = getUser;
+exports.saveUser = saveUser;
+exports.getWishlist = getWishlist;
+exports.saveWishlist = saveWishlist;
+exports.getItem = getItem;
+exports.saveItem = saveItem;

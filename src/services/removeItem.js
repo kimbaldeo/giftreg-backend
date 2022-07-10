@@ -1,4 +1,5 @@
 const database = require('../utilities/database');
+const util = require('../utilities/responseBuilder');
 
 /**
  * Remove Item From Wishlist Service
@@ -14,11 +15,13 @@ async function removeItem(wishlistInfo) {
         return util.buildResponse(503, { message: 'Cannot access wishlist' });
     }
 
-    const updatedWishlist = wishlist.items.filter(function(value, index, arr) {
+    const updatedWishlistItems = wishlist.items.filter(function(value) {
         return value != itemID;
     });
 
-    const saveWishlistResponse = await database.saveWishlist(updatedWishlist);
+    wishlist.items = updatedWishlistItems;
+
+    const saveWishlistResponse = await database.saveWishlist(wishlist);
     if (!saveWishlistResponse) {
         return util.buildResponse(503, { message: 'Server Error, could not save updated wishlist. Please try again later.'});
     }

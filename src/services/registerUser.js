@@ -18,7 +18,7 @@ async function register(userInfo) {
   }
 
   const getUserResponse = database.getUser(userInfo.username.toLowerCase().trim());
-  if (getUserResponse) {
+  if (getUserResponse && !database.isLocalhost) {
     return responseBuilder.buildResponse(401, {
       message: 'This username already exists. Please choose a different name'
     });
@@ -29,7 +29,7 @@ async function register(userInfo) {
   while(wishlistIDAlreadyExists) {
     wishlistID = uuid.v4();
     const getWishlistResponse = database.getWishlist(wishlistID);
-    if (!getWishlistResponse) {
+    if (!getWishlistResponse || database.isLocalhost) {
       wishlistIDAlreadyExists = false;
     }
   }
